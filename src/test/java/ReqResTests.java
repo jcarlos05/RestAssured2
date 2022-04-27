@@ -3,10 +3,17 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
+import io.restassured.http.Header;
+import io.restassured.response.Response;
+import org.apache.http.HttpStatus;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.swing.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.reset;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -41,7 +48,7 @@ public class ReqResTests {
         given()
 
                 .get("users/2")
-                .then().log().all()
+                .then()
                 .statusCode(200)
                 .body("data.id",equalTo(2));
     }
@@ -50,8 +57,44 @@ public class ReqResTests {
     public void deleteUserTest(){
         given()
                 .delete("users/2")
-                .then().log().all()
+                .then()
                 .statusCode(204);
     }
+    @Test
+    public void patchUserTest(){
+        String nameUpdated = given()
+                //.contentType(ContentType.JSON)
+                .when()
+                .body("{\n" +
+                        "    \"name\": \"morpheus\",\n" +
+                        "    \"job\": \"zion resident\"\n" +
+                        "}")
+                .patch("users/2")
+                .then()
+                .statusCode(HttpStatus.SC_OK)
+                .extract()
+                .jsonPath().getString("name");
+        assertThat(nameUpdated,equalTo("morpheus"));
+
+    }
+    @Test
+    public void PutUserTest(){
+
+        String jobUpdated = given()
+                //.contentType(ContentType.JSON)
+                .when()
+                .body("{\n" +
+                        "    \"name\": \"morpheus\",\n" +
+                        "    \"job\": \"zion resident\"\n" +
+                        "}")
+                .put("users/2")
+                .then()
+                .statusCode(HttpStatus.SC_OK)
+                .extract()
+                .jsonPath().getString("job");
+        assertThat(jobUpdated,equalTo("zion resident"));
+    }
+
+
 
 }
